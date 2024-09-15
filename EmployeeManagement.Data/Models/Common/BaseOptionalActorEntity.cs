@@ -20,14 +20,6 @@ namespace EmployeeManagement.Data.Models.Common
         public int? CreatedById { get; set; }
         public int? UpdatedById { get; set; }
         public int? DeletedById { get; set; }
-
-        // This is the shadow property used by EF Core
-        private bool _isDeleted;
-        // This is the property that will be mapped to the database
-        public bool IsDeleted
-        {
-            get => DeletedAt.HasValue;
-            set => _isDeleted = value;
-        }
+        public bool IsDeleted { get; set; }
     }
 }
