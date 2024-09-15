@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace EmployeeManagement.Data.Models
@@ -27,11 +28,27 @@ namespace EmployeeManagement.Data.Models
         // Foreign Key for Department
         [ForeignKey("Department")]
         public int DepartmentId { get; set; }
+        [JsonIgnore]
         public Department Department { get; set; } // Navigation Property
         [ForeignKey("Designation")]
         // Foreign Key for Designation
         [Required]
         public int DesignationId { get; set; }
+        [JsonIgnore]
         public Designation Designation { get; set; } // Navigation Property
+
+
+        // Calculated Age property
+        [NotMapped]
+        public int Age
+        {
+            get
+            {
+                var today = DateTime.Today;
+                var age = today.Year - BirthDate.Year;
+                if (BirthDate.Date > today.AddYears(-age)) age--; // Adjust if the birthday hasn't occurred yet this year
+                return age;
+            }
+        }
     }
 }

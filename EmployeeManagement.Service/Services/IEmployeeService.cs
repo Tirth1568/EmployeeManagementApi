@@ -1,6 +1,6 @@
 ﻿using EmployeeManagement.Data.Models;
 
-namespace EmployeeManagement.Service
+namespace EmployeeManagement.Service.Services
 {
     public interface IEmployeeService
     {
@@ -9,5 +9,7 @@ namespace EmployeeManagement.Service
         Task<Employee> CreateEmployeeAsync(Employee employee);
         Task<Employee> UpdateEmployeeAsync(Employee employee);
         Task<bool> DeleteEmployeeAsync(int empId);
+
+        Task<PagedResult<Employee>> GetEmployeesAsync(int pageIndex, int pageSize, string name = null, string email = null, int? id = null);
     }
 }

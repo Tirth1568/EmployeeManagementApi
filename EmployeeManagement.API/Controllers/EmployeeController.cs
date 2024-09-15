@@ -1,5 +1,5 @@
 ﻿using EmployeeManagement.Data.Models;
-using EmployeeManagement.Service;
+using EmployeeManagement.Service.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,17 +10,27 @@ namespace EmployeeManagement.API.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
+        private readonly IDepartmentService _departmentService;
+        private readonly IDesignationService _designationService;
 
-        public EmployeeController(IEmployeeService employeeService)
+        public EmployeeController(IEmployeeService employeeService, IDepartmentService departmentService , IDesignationService designationService)
         {
             _employeeService = employeeService;
+            _departmentService = departmentService;
+            _designationService = designationService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
+        public async Task<IActionResult> GetEmployees(
+        [FromQuery] int pageIndex = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string name = null,
+        [FromQuery] string email = null,
+        [FromQuery] int? id = null)
         {
-            var employees = await _employeeService.GetEmployeesAsync();
-            return Ok(employees);
+            var result = await _employeeService.GetEmployeesAsync(pageIndex, pageSize, name, email, id);
+
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
@@ -35,21 +45,42 @@ namespace EmployeeManagement.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Employee>> CreateEmployee(Employee employee)
+        public async Task<ActionResult<Employee>> CreateEmployee(EmployeeRequestModel employeeRM)
         {
+            if (employeeRM == null) return BadRequest();
+            if (! await _designationService.IsExists(employeeRM.DesignationId)) return BadRequest();
+            if (! await _departmentService.IsExists(employeeRM.DepartmentId)) return BadRequest();
+            Employee employee = new Employee() { 
+                FirstName = employeeRM.FirstName,
+                LastName = employeeRM.LastName,
+                Email = employeeRM.Email,
+                BirthDate = employeeRM.BirthDate,
+                DepartmentId = employeeRM.DepartmentId,
+                DesignationId = employeeRM.DesignationId
+            };
+
             var newEmployee = await _employeeService.CreateEmployeeAsync(employee);
             return CreatedAtAction(nameof(GetEmployee), new { id = newEmployee.Id }, newEmployee);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEmployee(int id, Employee employee)
+        public async Task<IActionResult> UpdateEmployee(int id, EmployeeRequestModel employeeRM)
         {
-            if (id != employee.Id)
+            if (id != employeeRM.Id)
             {
                 return BadRequest();
             }
+            var existingEntry = await _employeeService.GetEmployeeByIdAsync(id);
+            if(existingEntry == null) { return BadRequest(); }
 
-            var updatedEmployee = await _employeeService.UpdateEmployeeAsync(employee);
+            existingEntry.FirstName = employeeRM.FirstName;
+            existingEntry.LastName = employeeRM.LastName;
+            existingEntry.Email = employeeRM.Email;
+            existingEntry.BirthDate = employeeRM.BirthDate;
+            existingEntry.DepartmentId = employeeRM.DepartmentId;
+            existingEntry.DesignationId = employeeRM.DesignationId;
+     
+            var updatedEmployee = await _employeeService.UpdateEmployeeAsync(existingEntry);
             return Ok(updatedEmployee);
         }
 
@@ -63,5 +94,6 @@ namespace EmployeeManagement.API.Controllers
             }
             return NoContent();
         }
+
     }
 }

@@ -14,5 +14,7 @@ namespace EmployeeManagement.Data.Repositories
         Task<Employee> AddAsync(Employee employee);
         Task<Employee> UpdateAsync(Employee employee);
         Task<bool> DeleteAsync(int empId);
+        Task<PagedResult<Employee>> GetEmployeesAsync(int pageIndex, int pageSize, string name = null, string email = null, int? id = null);
+        Task<string> GetLastEmployeeTagAsync();
     }
 }
