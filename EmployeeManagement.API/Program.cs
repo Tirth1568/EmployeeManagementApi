@@ -1,13 +1,16 @@
 using EmployeeManagement.Data.Contexts;
 using EmployeeManagement.Data.Repositories;
+using EmployeeManagement.Service.Mapping;
 using EmployeeManagement.Service.Services;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("sql");
 builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseSqlServer(connectionString));
+
+builder.Services.AddAutoMapper(typeof(EmployeeProfile)); // Register AutoMapper with DI
+
 //repos
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();

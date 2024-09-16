@@ -60,7 +60,7 @@ namespace EmployeeManagement.API.Controllers
             };
 
             var newEmployee = await _employeeService.CreateEmployeeAsync(employee);
-            return CreatedAtAction(nameof(GetEmployee), new { id = newEmployee.Id }, newEmployee);
+            return Ok(newEmployee);
         }
 
         [HttpPut("{id}")]
