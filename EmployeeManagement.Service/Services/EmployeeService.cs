@@ -1,4 +1,6 @@
-﻿using EmployeeManagement.Data.Models;
+﻿using AutoMapper;
+using EmployeeManagement.Data.Models;
+using EmployeeManagement.Data.Models.DTOs;
 using EmployeeManagement.Data.Repositories;
 using System;
 using System.Collections.Generic;
@@ -11,10 +13,11 @@ namespace EmployeeManagement.Service.Services
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _employeeRepository;
-
-        public EmployeeService(IEmployeeRepository employeeRepository)
+        private readonly IMapper _mapper;
+        public EmployeeService(IEmployeeRepository employeeRepository, IMapper mapper)
         {
             _employeeRepository = employeeRepository;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<Employee>> GetEmployeesAsync()
@@ -27,25 +30,31 @@ namespace EmployeeManagement.Service.Services
             return await _employeeRepository.GetByIdAsync(empId);
         }
 
-        public async Task<Employee> CreateEmployeeAsync(Employee employee)
+        public async Task<EmployeeDTO> CreateEmployeeAsync(Employee employee)
         {
             employee.EmpTagNumber = await GenerateEmpTagNumberAsync(employee.FirstName, employee.LastName);
 
-            return await _employeeRepository.AddAsync(employee);
+            var addedEmployee = await _employeeRepository.AddAsync(employee);
+            return _mapper.Map<EmployeeDTO>(addedEmployee); // Map Entity to DTO
         }
 
-        public async Task<Employee> UpdateEmployeeAsync(Employee employee)
+        public async Task<EmployeeDTO> UpdateEmployeeAsync(Employee employee)
         {
-            return await _employeeRepository.UpdateAsync(employee);
+            var updateEmployee = await _employeeRepository.UpdateAsync(employee);
+            return _mapper.Map<EmployeeDTO>(updateEmployee);
         }
 
         public async Task<bool> DeleteEmployeeAsync(int empId)
         {
             return await _employeeRepository.DeleteAsync(empId);
         }
-        public Task<PagedResult<Employee>> GetEmployeesAsync(int pageIndex, int pageSize, string name = null, string email = null, int? id = null)
+        public async Task<PagedResult<EmployeeDTO>> GetEmployeesAsync(int pageIndex, int pageSize, string name = null, string email = null, int? id = null)
         {
-            return _employeeRepository.GetEmployeesAsync(pageIndex, pageSize, name, email, id);
+            var pagedResult = await _employeeRepository.GetEmployeesAsync(pageIndex, pageSize, name, email, id);
+            // Use AutoMapper to map the PagedResult<Employee> to PagedResult<EmployeeDTO>
+            var mappedResult = _mapper.Map<PagedResult<EmployeeDTO>>(pagedResult);
+
+            return mappedResult;
         }
 
         public async Task<string> GenerateEmpTagNumberAsync(string firstName, string lastName)

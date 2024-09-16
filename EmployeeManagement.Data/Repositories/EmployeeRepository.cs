@@ -24,32 +24,12 @@ namespace EmployeeManagement.Data.Repositories
 
         public async Task<Employee> AddAsync(Employee employee)
         {
-            if (employee.Department != null)
-            {
-                var department = await _context.Departments
-                    .FindAsync(employee.Department.Id);
-                if (department != null)
-                {
-                    employee.Department = department;
-                }
-            }
-
-            // Retrieve existing Designation if it is provided
-            if (employee.Designation != null)
-            {
-                var designation = await _context.Designations
-                    .FindAsync(employee.Designation.Id);
-                if (designation != null)
-                {
-                    employee.Designation = designation;
-                }
-            }
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
             return await _context.Employees
-       .Include(e => e.Department)
-       .Include(e => e.Designation)
-       .FirstOrDefaultAsync(e => e.Id == employee.Id);
+                       .Include(e => e.Department)
+                       .Include(e => e.Designation)
+                       .FirstOrDefaultAsync(e => e.Id == employee.Id);
         }
 
         public async Task<Employee> UpdateAsync(Employee employee)
